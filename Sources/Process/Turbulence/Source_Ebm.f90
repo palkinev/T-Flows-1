@@ -52,14 +52,14 @@
     kin % n(c) = max(0.5*(uu % n(c) + vv % n(c) + ww % n(c)), TINY)
     ! P_k = 0.5 P_ii = - u_i u_k dU_i/dx_k
     p_kin(c) = max(-( uu % n(c) * u % x(c)  &
-                     + uv % n(c) * u % y(c)  &
-                     + uw % n(c) * u % z(c)  &
-                     + uv % n(c) * v % x(c)  &
-                     + vv % n(c) * v % y(c)  &
-                     + vw % n(c) * v % z(c)  &
-                     + uw % n(c) * w % x(c)  &
-                     + vw % n(c) * w % y(c)  &
-                     + ww % n(c) * w % z(c)), TINY)
+                    + uv % n(c) * u % y(c)  &
+                    + uw % n(c) * u % z(c)  &
+                    + uv % n(c) * v % x(c)  &
+                    + vv % n(c) * v % y(c)  &
+                    + vw % n(c) * v % z(c)  &
+                    + uw % n(c) * w % x(c)  &
+                    + vw % n(c) * w % y(c)  &
+                    + ww % n(c) * w % z(c)), TINY)
 
     ! |df22/x_j|
     mag_f22 = max( f22 % x(c)**2. + f22 % y(c)**2. + f22 % z(c)**2., TINY )
@@ -112,9 +112,8 @@
       + 2.*(b12*s12 + b13*s13 + b23*s23)
 
     ! for formula C.7
-    u_k_u_l_n_k_n_l = uu % n(c)*n1n1 + vv % n(c)*n2n2 &
-      + ww % n(c)*n3n3 + 2.*uv % n(c)*n1n2 + 2.*uw % n(c)*n1n3 &
-      + 2.*vw % n(c)*n2n3
+    u_k_u_l_n_k_n_l = uu % n(c)*n1n1 +    vv % n(c)*n2n2 +    ww % n(c)*n3n3 + &
+                  2.*uv % n(c)*n1n2 + 2.*uw % n(c)*n1n3 + 2.*vw % n(c)*n2n3
 
     !---------------!
     !   uu stress   !
@@ -237,10 +236,10 @@
       stress = max(uw % n(c), TINY)
 
       ! formula C.7
-      phi_wall = - 5.*eps_2_k * (                               &
-        uu % n(c)*n1n3 + uv % n(c)*n2n3 + uw % n(c)*n3n3+ &
-        uw % n(c)*n1n1 + vw % n(c)*n1n2 + ww % n(c)*n1n3  &
-        - 0.5*u_k_u_l_n_k_n_l*n1n3                           &
+      phi_wall = - 5.*eps_2_k * (                           &
+        uu % n(c)*n1n3 + uv % n(c)*n2n3 + uw % n(c)*n3n3 +  &
+        uw % n(c)*n1n1 + vw % n(c)*n1n2 + ww % n(c)*n1n3    &
+        - 0.5*u_k_u_l_n_k_n_l*n1n3                          &
         - stress) ! this extra term is substracted from A later
 
       ! formula C.3 (without C4 1st term)
@@ -255,7 +254,6 @@
       prod_and_coriolis = &
         - uu % n(c)*w % x(c) - uv%n(c)*w % y(c) - uw % n(c)*(w % z(c)+u % x(c))&
         - vw % n(c)*u % y(c) - ww % n(c)*u % z(c) &
-        ! did not check
         - 2.*omega_x*uv%n(c) - 2.*omega_y*(ww%n(c)-uu%n(c)) + 2.*omega_z*vw%n(c)
     !---------------!
     !   vw stress   !
@@ -284,7 +282,6 @@
       prod_and_coriolis = &
         - uu % n(c)*w % x(c) - uv%n(c)*w % y(c) - uw % n(c)*(w % z(c)+u % x(c))&
         - vw % n(c)*u % y(c) - ww % n(c)*u % z(c) &
-        ! did not check
         - 2.*omega_x*(vv%n(c)-ww%n(c))+ 2.*omega_y*uv%n(c) - 2.*omega_z*uw%n(c)
     !-------------------------------------!
     !   repeating part for all stresses   !
