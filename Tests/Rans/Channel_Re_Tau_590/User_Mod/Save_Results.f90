@@ -63,6 +63,9 @@
       print *, '... '
       print *, '==============================================================='
     end if
+
+    ! Restore the name and return
+    problem_name = store_name
     return
   end if
 
@@ -376,8 +379,11 @@
 
   if(u_tau_max .eq. 0.0) then
     if(this_proc < 2) then
-      write(*,*) 'Friction velocity is zero in User_Channel_profiles.f90 !'
+      write(*,*) '# Friction velocity is zero in User_Channel_Profiles.f90 !'
     end if
+
+    ! Restore the name and return
+    problem_name = store_name
     return
   end if
 
