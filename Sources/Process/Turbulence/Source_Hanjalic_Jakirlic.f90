@@ -571,16 +571,17 @@
       ! page 165 f_eps
       f_eps = 1. - (1. - 1.4/c_2e)*exp(-(re_t(c)/6.)**2.)
 
-      ! formula 2.19
-      eps_2_kin_wave = eps % n(c) - &
-        viscosity * (kin_x(c)**2. + kin_y(c)**2. + kin_z(c)**2.)
+      ! formula 2.19, second term, other part is in A
+      eps_2_kin_wave = viscosity * (kin_x(c)**2. + kin_y(c)**2. + kin_z(c)**2.)
 
       ! page 165, diss. eq., second term
-      b(c) = b(c) + grid % vol(c) * dissipation_2_term
+      b(c) = b(c) + grid % vol(c) * (                             &
+        dissipation_2_term                                        &
+        + c_2e * f_eps * eps % n(c) * eps_2_kin_wave / kin_lim(c) )
 
       A % val(A % dia(c)) = A % val(A % dia(c)) + grid % vol(c) * ( &
         - c_1e * p_kin(c) / kin_lim(c)  & ! page 165, diss. eq., first term
-        + c_2e * f_eps * eps_2_kin_wave ) ! page 165, diss. eq., third last
+        + c_2e * f_eps * eps % n(c) / kin_lim(c) ) ! diss. eq., third last
     end if
   end do
 
