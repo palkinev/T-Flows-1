@@ -449,8 +449,6 @@
 
         eps_h = eps_h_12
 
-        b(c) = b(c) + grid % vol(c) * ( &
-          - c_1 * eps % n(c)*TWO_THIRDS ) ! part of Phi_ij_1 to discard Kroneker
       end if
       !---------------!
       !   uw stress   !
@@ -467,8 +465,6 @@
 
         eps_h = eps_h_13
 
-        b(c) = b(c) + grid % vol(c) * ( &
-          - c_1 * eps % n(c)*TWO_THIRDS ) ! part of Phi_ij_1 to discard Kroneker
       end if
       !---------------!
       !   vw stress   !
@@ -485,28 +481,37 @@
 
         eps_h = eps_h_23
 
-        b(c) = b(c) + grid % vol(c) * ( &
-          - c_1 * eps % n(c)*TWO_THIRDS ) ! part of Phi_ij_1 to discard Kroneker
       end if
 
       !-------------------------------------!
       !   repeating part for all stresses   !
       !-------------------------------------!
-      b(c) = b(c) + grid % vol(c) *  ( &
-          c_1 * eps % n(c)*TWO_THIRDS  & ! part of Phi_ij_1
-        + max(prod_and_coriolis, 0.)   & ! P_ij + G_ij, if > 0
-        + max(phi_ij_2, 0.)            & ! Phi_ij_2   , if > 0
-        + max(phi_ij_1_w, 0.)          & ! Phi_ij_1_w , if > 0
-        + max(phi_ij_2_w, 0.)          ) ! Phi_ij_2_w , if > 0
+
+      ! term depending on Kronecker symbol 
+      if(name_phi .eq. 'UU' .or. &
+         name_phi .eq. 'VV' .or. &
+         name_phi .eq. 'WW') then
+        b(c) = b(c) + grid % vol(c) *  (   &
+          c_1 * eps % n(c)*TWO_THIRDS      & ! part of Phi_ij_1
+          - (1.-f_s)*TWO_THIRDS*eps % n(c) ) ! part of eps_ij^h
+
+      end if
+
+      b(c) = b(c) + grid % vol(c) *  (     &
+        + max(prod_and_coriolis, 0.)       & ! P_ij + G_ij, if > 0
+        + max(phi_ij_2, 0.)                & ! Phi_ij_2   , if > 0
+        + max(phi_ij_1_w, 0.)              & ! Phi_ij_1_w , if > 0
+        + max(phi_ij_2_w, 0.)              ) ! Phi_ij_2_w , if > 0
 
       A % val(A % dia(c)) = A % val(A % dia(c)) + grid % vol(c) * ( &
           c_1 * eps_2_kin            & ! part of Phi_ij_1
-        + eps_h                      & ! eps_ij^h / u_iu_j
+        + f_s * eps_2_kin            & ! part of eps_ij^h / u_iu_j
+        + (                          &
         - min(prod_and_coriolis, 0.) & ! (P_ij + G_ij) / u_iu_j, if < 0
         - min(phi_ij_2, 0.)          & ! (Phi_ij_2)    / u_iu_j, if < 0
         - min(phi_ij_1_w, 0.)        & ! (Phi_ij_1_w)  / u_iu_j, if < 0
         - min(phi_ij_2_w, 0.)        & ! (Phi_ij_2_w)  / u_iu_j, if < 0
-        ) / stress
+          ) / stress                                              )
   !----------------------!
   !   Epsilon equation   !
   !----------------------!
