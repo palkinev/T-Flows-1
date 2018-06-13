@@ -44,7 +44,7 @@
 !   Coriolis:    G_ij = - 2 omega_k ( eps_ikm <u_j u_m> - eps_jkm <u_i u_m> )  !
 !------------------------------------------------------------------------------!
 
-  !call Time_And_Length_Scale(grid)
+  call Time_And_Length_Scale(grid) ! duplicated in Main_Pro
 
   do  c = 1, grid % n_cells
 
@@ -302,7 +302,7 @@
     !---------!
     else if (name_phi .eq. 'EPS') then
       Esor = grid % vol(c)/max(t_scale(c),TINY)
-      c_1e1 = c_1e * (1. + 0.1*(1.-alpha3)*p_kin(c)/(eps % n(c)+TINY))
+      c_1e1 = c_1e * (1. + 0.1*(1.-alpha3)*p_kin(c)/max(eps % n(c), TINY) )
       b(c) = b(c) + c_1e1*density*p_kin(c)*Esor
 
       ! Fill in a diagonal of coefficient matrix

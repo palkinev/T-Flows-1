@@ -85,7 +85,7 @@
 !------------------------------------------------------------------------------!
 ! but dens > 1 mod. not applied here yet
 
-  !call Time_And_Length_Scale(grid) ! duplicated in Main_Pro
+  call Time_And_Length_Scale(grid) ! duplicated in Main_Pro
 
   !--------------------------------------------!
   !   preparations before filling source term  !
@@ -114,7 +114,6 @@
 
   if(name_phi .ne. 'EPS') then ! it is not eps eq.
 
-
     ! needed for n_i_n_j
     call Grad_Mod_For_Phi(grid, l_scale, 1, l_sc_x,.true.)
     call Grad_Mod_For_Phi(grid, l_scale, 2, l_sc_y,.true.)
@@ -132,7 +131,7 @@
     call Grad_Mod_For_Phi(grid, kin_sq, 3, kin_z, .true.) ! dK/dz
 
     ! page 165 for term at -2*\nu(...)
-
+    ! d^2U_k/dx_i dx_j can be sent outside this fucntion
     call Grad_Mod_For_Phi(grid, u % x,  1, u_xx, .true.)  ! d2U/dxdx
     call Grad_Mod_For_Phi(grid, u % y,  2, u_yy, .true.)  ! d2U/dydy
     call Grad_Mod_For_Phi(grid, u % z,  3, u_zz, .true.)  ! d2U/dzdz
@@ -186,18 +185,18 @@
   do  c = 1, grid % n_cells
 
     ! Epsilon over kinetic energy used almost 30 times in this loop
-    eps_2_kin = eps % n(c) / (kin % n(c) + TINY)
+    eps_2_kin = eps % n(c) / kin_lim(c)
 
     ! P_k = 0.5 P_ii = - u_i u_k dU_i/dx_k
     p_kin(c) = max(-( uu % n(c) * u % x(c)  &
-                + uv % n(c) * u % y(c)  &
-                + uw % n(c) * u % z(c)  &
-                + uv % n(c) * v % x(c)  &
-                + vv % n(c) * v % y(c)  &
-                + vw % n(c) * v % z(c)  &
-                + uw % n(c) * w % x(c)  &
-                + vw % n(c) * w % y(c)  &
-                + ww % n(c) * w % z(c)  ), TINY)
+                    + uv % n(c) * u % y(c)  &
+                    + uw % n(c) * u % z(c)  &
+                    + uv % n(c) * v % x(c)  &
+                    + vv % n(c) * v % y(c)  &
+                    + vw % n(c) * v % z(c)  &
+                    + uw % n(c) * w % x(c)  &
+                    + vw % n(c) * w % y(c)  &
+                    + ww % n(c) * w % z(c)), TINY)
 
     ! formula 2.4
     a11 = uu % n(c) / kin_lim(c) - TWO_THIRDS
@@ -578,7 +577,7 @@
         + c_2e * f_eps * eps % n(c) * eps_2_kin_wave / kin_lim(c) )
 
       A % val(A % dia(c)) = A % val(A % dia(c)) + grid % vol(c) * ( &
-        - c_1e * p_kin(c) / kin_lim(c)  & ! page 165, diss. eq., first term
+        + c_1e * p_kin(c) / kin_lim(c)  & ! page 165, diss. eq., first term
         + c_2e * f_eps * eps % n(c) / kin_lim(c) ) ! diss. eq., third last
     end if
   end do
