@@ -22,24 +22,24 @@
                       kin_xx => r_cell_07,  &
                       kin_yy => r_cell_08,  &
                       kin_zz => r_cell_09,  &
-                      U_xx   => r_cell_10,  &
-                      U_yy   => r_cell_11,  &
-                      U_zz   => r_cell_12,  &
-                      U_xy   => r_cell_13,  &
-                      U_xz   => r_cell_14,  &
-                      U_yz   => r_cell_15,  &
-                      V_xx   => r_cell_16,  &
-                      V_yy   => r_cell_17,  &
-                      V_zz   => r_cell_18,  &
-                      V_xy   => r_cell_19,  &
-                      V_xz   => r_cell_20,  &
-                      V_yz   => r_cell_21,  &
-                      W_xx   => r_cell_22,  &
-                      W_yy   => r_cell_23,  &
-                      W_zz   => r_cell_24,  &
-                      W_xy   => r_cell_25,  &
-                      W_xz   => r_cell_26,  &
-                      W_yz   => r_cell_27,  &
+                      u_xx   => r_cell_10,  &
+                      u_yy   => r_cell_11,  &
+                      u_zz   => r_cell_12,  &
+                      u_xy   => r_cell_13,  &
+                      u_xz   => r_cell_14,  &
+                      u_yz   => r_cell_15,  &
+                      v_xx   => r_cell_16,  &
+                      v_yy   => r_cell_17,  &
+                      v_zz   => r_cell_18,  &
+                      v_xy   => r_cell_19,  &
+                      v_xz   => r_cell_20,  &
+                      v_yz   => r_cell_21,  &
+                      w_xx   => r_cell_22,  &
+                      w_yy   => r_cell_23,  &
+                      w_zz   => r_cell_24,  &
+                      w_xy   => r_cell_25,  &
+                      w_xz   => r_cell_26,  &
+                      w_yz   => r_cell_27,  &
                       kin_sq => r_cell_28,  &
                       eps_lim=> r_cell_29,  &
                       kin_lim=> r_cell_30,  &
@@ -85,14 +85,15 @@
 !------------------------------------------------------------------------------!
 ! but dens > 1 mod. not applied here yet
 
+  !call Time_And_Length_Scale(grid) ! duplicated in Main_Pro
+
   !--------------------------------------------!
   !   preparations before filling source term  !
   !--------------------------------------------!
 
   do c = 1, grid % n_cells
-    kin % n(c) = max(0.5*(uu % n(c) + vv % n(c) + ww % n(c)), TINY)
-    eps_lim(c) = eps % n(c) + TINY ! limited eps to divide by
-    kin_lim(c) = kin % n(c) + TINY ! limited kin to divide by
+    eps_lim(c) = max(eps % n(c), TINY) ! limited eps % n
+    kin_lim(c) = max(kin % n(c), TINY) ! limited kin % n
   end do
 
   ! needed for eps_tot -> re_t
@@ -113,10 +114,6 @@
 
   if(name_phi .ne. 'EPS') then ! it is not eps eq.
 
-    do c = 1, grid % n_cells
-      l_scale(c) = kin % n(c)**1.5/eps_lim(c)
-      t_scale(c) = kin % n(c)/eps_lim(c)
-    end do
 
     ! needed for n_i_n_j
     call Grad_Mod_For_Phi(grid, l_scale, 1, l_sc_x,.true.)
@@ -135,26 +132,27 @@
     call Grad_Mod_For_Phi(grid, kin_sq, 3, kin_z, .true.) ! dK/dz
 
     ! page 165 for term at -2*\nu(...)
-    call Grad_Mod_For_Phi(grid, U % x,  1, U_xx, .true.)  ! d2U/dxdx
-    call Grad_Mod_For_Phi(grid, U % y,  2, U_yy, .true.)  ! d2U/dydy
-    call Grad_Mod_For_Phi(grid, U % z,  3, U_zz, .true.)  ! d2U/dzdz
-    call Grad_Mod_For_Phi(grid, U % x,  2, U_xy, .true.)  ! d2U/dxdy
-    call Grad_Mod_For_Phi(grid, U % x,  3, U_xz, .true.)  ! d2U/dxdz
-    call Grad_Mod_For_Phi(grid, U % y,  3, U_yz, .true.)  ! d2U/dydz
 
-    call Grad_Mod_For_Phi(grid, V % x,  1, V_xx, .true.)  ! d2V/dxdx
-    call Grad_Mod_For_Phi(grid, V % y,  2, V_yy, .true.)  ! d2V/dydy
-    call Grad_Mod_For_Phi(grid, V % z,  3, V_zz, .true.)  ! d2V/dzdz
-    call Grad_Mod_For_Phi(grid, V % x,  2, V_xy, .true.)  ! d2V/dxdy
-    call Grad_Mod_For_Phi(grid, V % x,  3, V_xz, .true.)  ! d2V/dxdz
-    call Grad_Mod_For_Phi(grid, V % y,  3, V_yz, .true.)  ! d2V/dydz
+    call Grad_Mod_For_Phi(grid, u % x,  1, u_xx, .true.)  ! d2U/dxdx
+    call Grad_Mod_For_Phi(grid, u % y,  2, u_yy, .true.)  ! d2U/dydy
+    call Grad_Mod_For_Phi(grid, u % z,  3, u_zz, .true.)  ! d2U/dzdz
+    call Grad_Mod_For_Phi(grid, u % x,  2, u_xy, .true.)  ! d2U/dxdy
+    call Grad_Mod_For_Phi(grid, u % x,  3, u_xz, .true.)  ! d2U/dxdz
+    call Grad_Mod_For_Phi(grid, u % y,  3, u_yz, .true.)  ! d2U/dydz
 
-    call Grad_Mod_For_Phi(grid, W % x,  1, W_xx, .true.)  ! d2W/dxdx
-    call Grad_Mod_For_Phi(grid, W % y,  2, W_yy, .true.)  ! d2W/dydy
-    call Grad_Mod_For_Phi(grid, W % z,  3, W_zz, .true.)  ! d2W/dzdz
-    call Grad_Mod_For_Phi(grid, W % x,  2, W_xy, .true.)  ! d2W/dxdy
-    call Grad_Mod_For_Phi(grid, W % x,  3, W_xz, .true.)  ! d2W/dxdz
-    call Grad_Mod_For_Phi(grid, W % y,  3, W_yz, .true.)  ! d2W/dydz
+    call Grad_Mod_For_Phi(grid, v % x,  1, v_xx, .true.)  ! d2V/dxdx
+    call Grad_Mod_For_Phi(grid, v % y,  2, v_yy, .true.)  ! d2V/dydy
+    call Grad_Mod_For_Phi(grid, v % z,  3, v_zz, .true.)  ! d2V/dzdz
+    call Grad_Mod_For_Phi(grid, v % x,  2, v_xy, .true.)  ! d2V/dxdy
+    call Grad_Mod_For_Phi(grid, v % x,  3, v_xz, .true.)  ! d2V/dxdz
+    call Grad_Mod_For_Phi(grid, v % y,  3, v_yz, .true.)  ! d2V/dydz
+
+    call Grad_Mod_For_Phi(grid, w % x,  1, w_xx, .true.)  ! d2W/dxdx
+    call Grad_Mod_For_Phi(grid, w % y,  2, w_yy, .true.)  ! d2W/dydy
+    call Grad_Mod_For_Phi(grid, w % z,  3, w_zz, .true.)  ! d2W/dzdz
+    call Grad_Mod_For_Phi(grid, w % x,  2, w_xy, .true.)  ! d2W/dxdy
+    call Grad_Mod_For_Phi(grid, w % x,  3, w_xz, .true.)  ! d2W/dxdz
+    call Grad_Mod_For_Phi(grid, w % y,  3, w_yz, .true.)  ! d2W/dydz
 
     call Grad_Mod_For_Phi(grid, uu % n, 1, uu % x, .true.)  ! duu/dx
     call Grad_Mod_For_Phi(grid, uu % n, 2, uu % y, .true.)  ! duu/dy
@@ -191,15 +189,15 @@
     eps_2_kin = eps % n(c) / (kin % n(c) + TINY)
 
     ! P_k = 0.5 P_ii = - u_i u_k dU_i/dx_k
-    p_kin(c) =     -( uu % n(c) * u % x(c)  &
-                    + uv % n(c) * u % y(c)  &
-                    + uw % n(c) * u % z(c)  &
-                    + uv % n(c) * v % x(c)  &
-                    + vv % n(c) * v % y(c)  &
-                    + vw % n(c) * v % z(c)  &
-                    + uw % n(c) * w % x(c)  &
-                    + vw % n(c) * w % y(c)  &
-                    + ww % n(c) * w % z(c)  )
+    p_kin(c) = max(-( uu % n(c) * u % x(c)  &
+                + uv % n(c) * u % y(c)  &
+                + uw % n(c) * u % z(c)  &
+                + uv % n(c) * v % x(c)  &
+                + vv % n(c) * v % y(c)  &
+                + vw % n(c) * v % z(c)  &
+                + uw % n(c) * w % x(c)  &
+                + vw % n(c) * w % y(c)  &
+                + ww % n(c) * w % z(c)  ), TINY)
 
     ! formula 2.4
     a11 = uu % n(c) / kin_lim(c) - TWO_THIRDS
@@ -442,7 +440,7 @@
       !---------------!
       if(name_phi .eq. 'UV') then
         ! limited stress
-        stress = max(uv % n(c), TINY)
+        stress = uv % n(c)
 
         prod_and_coriolis = p12
 
@@ -460,7 +458,7 @@
       !---------------!
       if(name_phi .eq. 'UW') then
         ! limited stress
-        stress = max(uw % n(c), TINY)
+        stress = uw % n(c)
 
         prod_and_coriolis = p13
 
@@ -478,7 +476,7 @@
       !---------------!
       if(name_phi .eq. 'VW') then
         ! limited stress
-        stress = max(vw % n(c), TINY)
+        stress = vw % n(c)
 
         prod_and_coriolis = p23
 
@@ -518,54 +516,54 @@
     ! page 165 second term
       dissipation_2_term = - 2 * viscosity * (                                 &
                                                                                !
-        uu % x(c) * U_xx(c) + uv % x(c) * V_xx(c) + uw % x(c) * W_xx(c)        &
-      + uv % x(c) * U_xy(c) + vv % x(c) * V_xy(c) + vw % x(c) * W_xy(c)        &
-      + uw % x(c) * U_xz(c) + vw % x(c) * V_xz(c) + ww % x(c) * W_xz(c)        &
+        uu % x(c) * u_xx(c) + uv % x(c) * v_xx(c) + uw % x(c) * w_xx(c)        &
+      + uv % x(c) * u_xy(c) + vv % x(c) * v_xy(c) + vw % x(c) * w_xy(c)        &
+      + uw % x(c) * u_xz(c) + vw % x(c) * v_xz(c) + ww % x(c) * w_xz(c)        &
                                                                                !
-      + uu % y(c) * U_xy(c) + uv % y(c) * V_xy(c) + uw % y(c) * W_xy(c)        &
-      + uv % y(c) * U_yy(c) + vv % y(c) * V_yy(c) + vw % y(c) * W_yy(c)        &
-      + uw % y(c) * U_yz(c) + vw % y(c) * V_yz(c) + ww % y(c) * W_yz(c)        &
+      + uu % y(c) * u_xy(c) + uv % y(c) * v_xy(c) + uw % y(c) * w_xy(c)        &
+      + uv % y(c) * u_yy(c) + vv % y(c) * v_yy(c) + vw % y(c) * w_yy(c)        &
+      + uw % y(c) * u_yz(c) + vw % y(c) * v_yz(c) + ww % y(c) * w_yz(c)        &
                                                                                !
-      + uu % z(c) * U_xz(c) + uv % z(c) * V_xz(c) + uw % z(c) * W_xz(c)        &
-      + uv % z(c) * U_yz(c) + vv % z(c) * V_yz(c) + vw % z(c) * W_yz(c)        &
-      + uw % z(c) * U_zz(c) + vw % z(c) * V_zz(c) + ww % z(c) * W_zz(c)        &
+      + uu % z(c) * u_xz(c) + uv % z(c) * v_xz(c) + uw % z(c) * w_xz(c)        &
+      + uv % z(c) * u_yz(c) + vv % z(c) * v_yz(c) + vw % z(c) * w_yz(c)        &
+      + uw % z(c) * u_zz(c) + vw % z(c) * v_zz(c) + ww % z(c) * w_zz(c)        &
                                                                                !
       + c_3e * kin % n(c) / eps_lim(c) * (                                     &
-        uu % x(c)*( U % x(c)*U_xx(c) + V % x(c)*V_xx(c) + W % x(c)*W_xx(c) )   &
-      + uu % y(c)*( U % x(c)*U_xy(c) + V % x(c)*V_xy(c) + W % x(c)*W_xy(c) )   &
-      + uu % z(c)*( U % x(c)*U_xz(c) + V % x(c)*V_xz(c) + W % x(c)*W_xz(c) )   &
+        uu % x(c)*( u % x(c)*u_xx(c) + v % x(c)*v_xx(c) + w % x(c)*w_xx(c) )   &
+      + uu % y(c)*( u % x(c)*u_xy(c) + v % x(c)*v_xy(c) + w % x(c)*w_xy(c) )   &
+      + uu % z(c)*( u % x(c)*u_xz(c) + v % x(c)*v_xz(c) + w % x(c)*w_xz(c) )   &
                                                                                !
-      + uv % x(c)*( U % y(c)*U_xx(c) + V % y(c)*V_xx(c) + W % y(c)*W_xx(c) )   &
-      + uv % y(c)*( U % y(c)*U_xy(c) + V % y(c)*V_xy(c) + W % y(c)*W_xy(c) )   &
-      + uv % z(c)*( U % y(c)*U_xz(c) + V % y(c)*V_xz(c) + W % y(c)*W_xz(c) )   &
+      + uv % x(c)*( u % y(c)*u_xx(c) + v % y(c)*v_xx(c) + w % y(c)*w_xx(c) )   &
+      + uv % y(c)*( u % y(c)*u_xy(c) + v % y(c)*v_xy(c) + w % y(c)*w_xy(c) )   &
+      + uv % z(c)*( u % y(c)*u_xz(c) + v % y(c)*v_xz(c) + w % y(c)*w_xz(c) )   &
                                                                                !
-      + uw % x(c)*( U % z(c)*U_xx(c) + V % z(c)*V_xx(c) + W % z(c)*W_xx(c) )   &
-      + uw % y(c)*( U % z(c)*U_xy(c) + V % z(c)*V_xy(c) + W % z(c)*W_xy(c) )   &
-      + uw % z(c)*( U % z(c)*U_xz(c) + V % z(c)*V_xz(c) + W % z(c)*W_xz(c) )   &
+      + uw % x(c)*( u % z(c)*u_xx(c) + v % z(c)*v_xx(c) + w % z(c)*w_xx(c) )   &
+      + uw % y(c)*( u % z(c)*u_xy(c) + v % z(c)*v_xy(c) + w % z(c)*w_xy(c) )   &
+      + uw % z(c)*( u % z(c)*u_xz(c) + v % z(c)*v_xz(c) + w % z(c)*w_xz(c) )   &
                                                                                !
-      + uv % x(c)*( U % x(c)*U_xy(c) + V % x(c)*V_xy(c) + W % x(c)*W_xy(c) )   &
-      + uv % y(c)*( U % x(c)*U_yy(c) + V % x(c)*V_yy(c) + W % x(c)*W_yy(c) )   &
-      + uv % z(c)*( U % x(c)*U_yz(c) + V % x(c)*V_yz(c) + W % x(c)*W_yz(c) )   &
+      + uv % x(c)*( u % x(c)*u_xy(c) + v % x(c)*v_xy(c) + w % x(c)*w_xy(c) )   &
+      + uv % y(c)*( u % x(c)*u_yy(c) + v % x(c)*v_yy(c) + w % x(c)*w_yy(c) )   &
+      + uv % z(c)*( u % x(c)*u_yz(c) + v % x(c)*v_yz(c) + w % x(c)*w_yz(c) )   &
                                                                                !
-      + vv % x(c)*( U % y(c)*U_xy(c) + V % y(c)*V_xy(c) + W % y(c)*W_xy(c) )   &
-      + vv % y(c)*( U % y(c)*U_yy(c) + V % y(c)*V_yy(c) + W % y(c)*W_yy(c) )   &
-      + vv % z(c)*( U % y(c)*U_yz(c) + V % y(c)*V_yz(c) + W % y(c)*W_yz(c) )   &
+      + vv % x(c)*( u % y(c)*u_xy(c) + v % y(c)*v_xy(c) + w % y(c)*w_xy(c) )   &
+      + vv % y(c)*( u % y(c)*u_yy(c) + v % y(c)*v_yy(c) + w % y(c)*w_yy(c) )   &
+      + vv % z(c)*( u % y(c)*u_yz(c) + v % y(c)*v_yz(c) + w % y(c)*w_yz(c) )   &
                                                                                !
-      + vw % x(c)*( U % z(c)*U_xy(c) + V % z(c)*V_xy(c) + W % z(c)*W_xy(c) )   &
-      + vw % y(c)*( U % z(c)*U_yy(c) + V % z(c)*V_yy(c) + W % z(c)*W_yy(c) )   &
-      + vw % z(c)*( U % z(c)*U_yz(c) + V % z(c)*V_yz(c) + W % z(c)*W_yz(c) )   &
+      + vw % x(c)*( u % z(c)*u_xy(c) + v % z(c)*v_xy(c) + w % z(c)*w_xy(c) )   &
+      + vw % y(c)*( u % z(c)*u_yy(c) + v % z(c)*v_yy(c) + w % z(c)*w_yy(c) )   &
+      + vw % z(c)*( u % z(c)*u_yz(c) + v % z(c)*v_yz(c) + w % z(c)*w_yz(c) )   &
                                                                                !
-      + uw % x(c)*( U % x(c)*U_xz(c) + V % x(c)*V_xz(c) + W % x(c)*W_xz(c) )   &
-      + uw % y(c)*( U % x(c)*U_yz(c) + V % x(c)*V_yz(c) + W % x(c)*W_yz(c) )   &
-      + uw % z(c)*( U % x(c)*U_zz(c) + V % x(c)*V_zz(c) + W % x(c)*W_zz(c) )   &
+      + uw % x(c)*( u % x(c)*u_xz(c) + v % x(c)*v_xz(c) + w % x(c)*w_xz(c) )   &
+      + uw % y(c)*( u % x(c)*u_yz(c) + v % x(c)*v_yz(c) + w % x(c)*w_yz(c) )   &
+      + uw % z(c)*( u % x(c)*u_zz(c) + v % x(c)*v_zz(c) + w % x(c)*w_zz(c) )   &
                                                                                !
-      + vw % x(c)*( U % y(c)*U_xz(c) + V % y(c)*V_xz(c) + W % y(c)*W_xz(c) )   &
-      + vw % y(c)*( U % y(c)*U_yz(c) + V % y(c)*V_yz(c) + W % y(c)*W_yz(c) )   &
-      + vw % z(c)*( U % y(c)*U_zz(c) + V % y(c)*V_zz(c) + W % y(c)*W_zz(c) )   &
+      + vw % x(c)*( u % y(c)*u_xz(c) + v % y(c)*v_xz(c) + w % y(c)*w_xz(c) )   &
+      + vw % y(c)*( u % y(c)*u_yz(c) + v % y(c)*v_yz(c) + w % y(c)*w_yz(c) )   &
+      + vw % z(c)*( u % y(c)*u_zz(c) + v % y(c)*v_zz(c) + w % y(c)*w_zz(c) )   &
                                                                                !
-      + ww % x(c)*( U % z(c)*U_xz(c) + V % z(c)*V_xz(c) + W % z(c)*W_xz(c) )   &
-      + ww % y(c)*( U % z(c)*U_yz(c) + V % z(c)*V_yz(c) + W % z(c)*W_yz(c) )   &
-      + ww % z(c)*( U % z(c)*U_zz(c) + V % z(c)*V_zz(c) + W % z(c)*W_zz(c) )   &
+      + ww % x(c)*( u % z(c)*u_xz(c) + v % z(c)*v_xz(c) + w % z(c)*w_xz(c) )   &
+      + ww % y(c)*( u % z(c)*u_yz(c) + v % z(c)*v_yz(c) + w % z(c)*w_yz(c) )   &
+      + ww % z(c)*( u % z(c)*u_zz(c) + v % z(c)*v_zz(c) + w % z(c)*w_zz(c) )   &
                                          )                                     &
                                                                                )
       ! page 165 f_eps

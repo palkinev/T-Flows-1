@@ -44,7 +44,7 @@
 !   Coriolis:    G_ij = - 2 omega_k ( eps_ikm <u_j u_m> - eps_jkm <u_i u_m> )  !
 !------------------------------------------------------------------------------!
 
-  call Time_And_Length_Scale(grid)
+  !call Time_And_Length_Scale(grid)
 
   do  c = 1, grid % n_cells
 
@@ -205,7 +205,7 @@
     elseif (name_phi .eq. 'UV') then
 
       ! limited stress
-      stress = max(uv % n(c), TINY)
+      stress = uv % n(c)
 
       ! formula C.7
       phi_wall = - 5.*eps_2_k * (                           &
@@ -233,7 +233,7 @@
     elseif (name_phi .eq. 'UW') then
 
       ! limited stress
-      stress = max(uw % n(c), TINY)
+      stress = uw % n(c)
 
       ! formula C.7
       phi_wall = - 5.*eps_2_k * (                           &
@@ -261,7 +261,7 @@
     elseif (name_phi .eq. 'VW') then
 
       ! limited stress
-      stress = max(vw % n(c), TINY)
+      stress = vw % n(c)
 
       ! formula C.7
       phi_wall = - 5.*eps_2_k * (                          &
