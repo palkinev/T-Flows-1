@@ -290,7 +290,7 @@
       ! page 165 f_w
       f_w  = min(kin % n(c)**1.5/(2.5*eps % n(c)*grid % wall_dist(c)), 1.4)
 
-      ! P_11 + G_11 (paper 2: formula C.1) ----- [ copied from Sources_Ebm ]
+      ! P_ij + G_ij [ copied from Sources_Ebm ]
       p11 = -2.*(uu % n(c)*u % x(c) + uv % n(c)*u % y(c) + uw % n(c)*u % z(c)) &
             -2.*omega_y*2.*uw % n(c) + 2.*omega_z*2.*uv % n(c)
 
@@ -347,7 +347,10 @@
 
         stress = uu % n(c)
 
+        ! P_ij + G_ij
         prod_and_coriolis = p11
+
+        ! page 164 Phi_ij,1 is splited in 2 part later
 
         ! page 164 Phi_ij,2
         phi_ij_2 = phi_ij_2_11
@@ -360,7 +363,7 @@
         phi_ij_2_w = c_2_w * f_w * ( phi_km_2_n_k_n_m - 3. *                   &
           ( phi_ij_2_11*n1n1 + phi_ij_2_12*n1n2 + phi_ij_2_13*n1n3 )           )
 
-        eps_h = eps_h_11
+        ! page 164 eps_h_ij is splited in 2 part later
       end if
       !---------------!
       !   vv stress   !
@@ -369,7 +372,10 @@
 
         stress = vv % n(c)
 
+        ! P_ij + G_ij
         prod_and_coriolis = p22
+
+        ! page 164 Phi_ij,1 is splited in 2 part later
 
         ! page 164 Phi_ij,2
         phi_ij_2 = phi_ij_2_22
@@ -382,7 +388,7 @@
         phi_ij_2_w = c_2_w * f_w * ( phi_km_2_n_k_n_m - 3. *                   &
           ( phi_ij_2_12*n1n2 + phi_ij_2_22*n2n2 + phi_ij_2_23*n2n3 )           )
 
-        eps_h = eps_h_22
+        ! page 164 eps_h_ij is splited in 2 part later
       end if
       !---------------!
       !   ww stress   !
@@ -391,7 +397,10 @@
 
         stress = ww % n(c)
 
+        ! P_ij + G_ij
         prod_and_coriolis = p33
+
+        ! page 164 Phi_ij,1 is splited in 2 part later
 
         ! page 164 Phi_ij,2
         phi_ij_2 = phi_ij_2_33
@@ -404,7 +413,7 @@
         phi_ij_2_w = c_2_w * f_w * ( phi_km_2_n_k_n_m - 3. *                   &
           ( phi_ij_2_13*n1n3 + phi_ij_2_23*n2n3 + phi_ij_2_33*n3n3 )           )
 
-        eps_h = eps_h_33
+        ! page 164 eps_h_ij is splited in 2 part later
       end if
       !---------------!
       !   uv stress   !
@@ -413,7 +422,10 @@
 
         stress = uv % n(c)
 
+        ! P_ij + G_ij
         prod_and_coriolis = p12
+
+        ! page 164 Phi_ij,1 is splited in 2 part later
 
         ! page 164 Phi_ij,2
         phi_ij_2 = phi_ij_2_12
@@ -428,7 +440,7 @@
           phi_ij_2_11*n1n2 + phi_ij_2_12*n2n2 + phi_ij_2_13*n2n3 + &
           phi_ij_2_12*n1n1 + phi_ij_2_22*n1n2 + phi_ij_2_23*n1n3   )
 
-        eps_h = eps_h_12
+        ! page 164 eps_h_ij is splited in 2 part later
 
       end if
       !---------------!
@@ -438,7 +450,10 @@
 
         stress = uw % n(c)
 
+        ! P_ij + G_ij
         prod_and_coriolis = p13
+
+        ! page 164 Phi_ij,1 is splited in 2 part later
 
         ! page 164 Phi_ij,2
         phi_ij_2 = phi_ij_2_13
@@ -453,7 +468,7 @@
           phi_ij_2_11*n1n3 + phi_ij_2_12*n2n3 + phi_ij_2_13*n3n3 + &
           phi_ij_2_13*n1n1 + phi_ij_2_23*n1n2 + phi_ij_2_33*n1n3   )
 
-        eps_h = eps_h_13
+        ! page 164 eps_h_ij is splited in 2 part later
 
       end if
       !---------------!
@@ -463,7 +478,13 @@
 
         stress = vw % n(c)
 
+        ! P_ij + G_ij
         prod_and_coriolis = p23
+
+        ! page 164 Phi_ij,1 is splited in 2 part later
+
+        ! page 164 Phi_ij,2
+        phi_ij_2 = phi_ij_2_23
 
         ! page 164 Phi_ij,1^w
         phi_ij_1_w = c_1_w * f_w * eps_2_kin * ( - 1.5 ) * (    &
@@ -475,10 +496,7 @@
           phi_ij_2_13*n1n2 + phi_ij_2_23*n2n2 + phi_ij_2_33*n2n3 + &
           phi_ij_2_12*n1n3 + phi_ij_2_22*n2n3 + phi_ij_2_23*n3n3   )
 
-        ! page 164 Phi_ij,2
-        phi_ij_2 = phi_ij_2_23
-
-        eps_h = eps_h_23
+        ! page 164 eps_h_ij is splited in 2 part later
 
       end if
 
