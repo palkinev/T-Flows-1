@@ -163,47 +163,44 @@
       b(c2) = b(c2) + flux % n(s)
 
     ! Side is on the boundary
-    else ! (c2 < 0)
+    else if(p % bnd_cond_type(c2) .eq. INFLOW) then
+      u_f = u % n(c2)
+      v_f = v % n(c2)
+      w_f = w % n(c2)
+      flux % n(s) = dens_factor(s) * ( u_f * grid % sx(s)     &
+                                     + v_f * grid % sy(s)     &
+                                     + w_f * grid % sz(s) )
 
-      if(Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. INFLOW) then
-        u_f = u % n(c2)
-        v_f = v % n(c2)
-        w_f = w % n(c2)
-        flux % n(s) = dens_factor(s) * ( u_f * grid % sx(s)     &
-                                       + v_f * grid % sy(s)     &
-                                       + w_f * grid % sz(s) )
+      b(c1) = b(c1) - flux % n(s)
+    else if(p % bnd_cond_type(c2) .eq. OUTFLOW .or.   &
+            p % bnd_cond_type(c2) .eq. CONVECT) then
+      u_f = u % n(c2)
+      v_f = v % n(c2)
+      w_f = w % n(c2)
+      flux % n(s) = dens_factor(s) * ( u_f * grid % sx(s)     &
+                                     + v_f * grid % sy(s)     &
+                                     + w_f * grid % sz(s) )
 
-        b(c1) = b(c1) - flux % n(s)
-      else if(Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. OUTFLOW .or.   &
-              Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. CONVECT) then
-        u_f = u % n(c2)
-        v_f = v % n(c2)
-        w_f = w % n(c2)
-        flux % n(s) = dens_factor(s) * ( u_f * grid % sx(s)     &
-                                       + v_f * grid % sy(s)     &
-                                       + w_f * grid % sz(s) )
+      b(c1) = b(c1) - flux % n(s)
 
-        b(c1) = b(c1) - flux % n(s)
+      a12 = dens_factor(s) * a % fc(s) * grid % vol(c1) / a % sav(c1)
+      a % val(a % dia(c1)) = a % val(a % dia(c1)) + a12
 
-        a12 = dens_factor(s) * a % fc(s) * grid % vol(c1) / a % sav(c1)
-        a % val(a % dia(c1)) = a % val(a % dia(c1)) + a12
+    else if(p % bnd_cond_type(c2) .eq. PRESSURE) then
+      u_f = u % n(c1)
+      v_f = v % n(c1)
+      w_f = w % n(c1)
+      flux % n(s) = dens_factor(s) * ( u_f * grid % sx(s)     &
+                                     + v_f * grid % sy(s)     &
+                                     + w_f * grid % sz(s) )
 
-      else if(Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. PRESSURE) then
-        u_f = u % n(c1)
-        v_f = v % n(c1)
-        w_f = w % n(c1)
-        flux % n(s) = dens_factor(s) * ( u_f * grid % sx(s)     &
-                                       + v_f * grid % sy(s)     &
-                                       + w_f * grid % sz(s) )
+      b(c1) = b(c1) - flux % n(s)
 
-        b(c1) = b(c1) - flux % n(s)
+      a12 = dens_factor(s) * a % fc(s) * grid % vol(c1) / a % sav(c1)
+      a % val(a % dia(c1)) = a % val(a % dia(c1)) + a12
 
-        a12 = dens_factor(s) * a % fc(s) * grid % vol(c1) / a % sav(c1)
-        a % val(a % dia(c1)) = a % val(a % dia(c1)) + a12
-
-      else  ! it is SYMMETRY
-        flux % n(s) = 0.0
-      end if
+    else if(p % bnd_cond_type(c2) .eq. SYMMETRY) then
+      flux % n(s) = 0.0
     end if
 
   end do
