@@ -48,6 +48,9 @@
     type(Var_Type) :: uv, uw, vw
     type(Var_Type) :: ut, vt, wt, t2
 
+    ! Boundary condition type for each face and turb. associated vars
+    integer, allocatable :: bnd_cond_type(:)
+
     !----------------!
     !   Statistics   !
     !----------------!

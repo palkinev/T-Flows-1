@@ -29,6 +29,9 @@
 
   allocate(turb % tau_wall(-nb:nc));  turb % tau_wall = 0.
 
+  ! Allocate b.c. type for turb. asspciated models
+  allocate(turb % bnd_cond_type(-nb:nc));  turb % bnd_cond_type = 0
+
   !-----------------!
   !   K-eps model   !
   !-----------------!
