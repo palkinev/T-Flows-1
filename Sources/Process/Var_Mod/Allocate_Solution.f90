@@ -12,47 +12,46 @@
   type(Grid_Type), target :: grid
   character(len=*)        :: name_phi
   character(len=*)        :: name_flux
+  integer                 :: nc, nb, nf
 !==============================================================================!
 
   ! Store grid for which the variable is defined
   phi % pnt_grid => grid
+  nc = grid % n_cells
+  nb = grid % n_bnd_cells
+  nf = grid % n_faces
 
   ! Store variable name
   phi % name      = name_phi
   phi % flux_name = name_flux
 
   ! Values new (n), old (o), and older than old (oo)
-  allocate (phi % n (-grid % n_bnd_cells: grid % n_cells));  phi % n  = 0.
-  allocate (phi % o (-grid % n_bnd_cells: grid % n_cells));  phi % o  = 0.
-  allocate (phi % oo(-grid % n_bnd_cells: grid % n_cells));  phi % oo = 0.
+  allocate (phi % n (-nb: nc));  phi % n  = 0.
+  allocate (phi % o (-nb: nc));  phi % o  = 0.
+  allocate (phi % oo(-nb: nc));  phi % oo = 0.
 
   ! Advection terms
-  allocate (phi % a(grid % n_cells));  phi % a = 0.
+  allocate (phi % a(nc));  phi % a = 0.
 
   ! Cross diffusion terms
-  allocate (phi % c(grid % n_cells));  phi % c = 0.
+  allocate (phi % c(nc));  phi % c = 0.
 
   ! Variable's boundary value
-  allocate (phi % b(-grid % n_bnd_cells: -1));  phi % b = 0.
+  allocate (phi % b(-nb: -1));  phi % b = 0.
 
   ! Variable's boundary flux
-  allocate (phi % q(-grid % n_bnd_cells: -1));  phi % q = 0.
+  allocate (phi % q(-nb: -1));  phi % q = 0.
 
-  ! Boundary cell type (important for scalars, since they
-  ! can have different boundary conditions at the walls)
-  ! It expands over all faces, in the case we decide to store ...
-  ! ... store boundary conditions in the faces one day, and ...
-  ! ... thus get rid of the "if(c2 < 0) then" checks
-  allocate (phi % bnd_cond_type(-grid % n_bnd_cells : grid % n_faces))
-  phi % bnd_cond_type = 0
+  ! Boundary cell type
+  allocate (phi % bnd_cond_type(-nb : nf));  phi % bnd_cond_type = 0
 
   ! Gradients
-  allocate (phi % x(-grid % n_bnd_cells : grid % n_cells));  phi % x = 0.0
-  allocate (phi % y(-grid % n_bnd_cells : grid % n_cells));  phi % y = 0.0
-  allocate (phi % z(-grid % n_bnd_cells : grid % n_cells));  phi % z = 0.0
+  allocate (phi % x(-nb : nc));  phi % x = 0.0
+  allocate (phi % y(-nb : nc));  phi % y = 0.0
+  allocate (phi % z(-nb : nc));  phi % z = 0.0
 
   ! Min and max
-  allocate (phi % min(-grid % n_bnd_cells : grid % n_cells));  phi % min = 0.0
-  allocate (phi % max(-grid % n_bnd_cells : grid % n_cells));  phi % max = 0.0
+  allocate (phi % min(-nb : nc));  phi % min = 0.0
+  allocate (phi % max(-nb : nc));  phi % max = 0.0
 
   end subroutine
