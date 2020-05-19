@@ -25,12 +25,12 @@
     c1 = grid % faces_c(1,s)
     c2 = grid % faces_c(2,s)
 
-    if((p % bnd_cond_type(c2) .eq. INFLOW)  .or.  &
-       (p % bnd_cond_type(c2) .eq. WALL)    .or.  &
-       (p % bnd_cond_type(c2) .eq. WALLFL)  .or.  &
-       (p % bnd_cond_type(c2) .eq. OUTFLOW) .or.  &
-       (p % bnd_cond_type(c2) .eq. CONVECT) .or.  &
-       (p % bnd_cond_type(c2) .eq. SYMMETRY) ) then
+    if((flow % p % bnd_cond_type(c2) .eq. INFLOW)  .or.  &
+       (flow % p % bnd_cond_type(c2) .eq. WALL)    .or.  &
+       (flow % p % bnd_cond_type(c2) .eq. WALLFL)  .or.  &
+       (flow % p % bnd_cond_type(c2) .eq. OUTFLOW) .or.  &
+       (flow % p % bnd_cond_type(c2) .eq. CONVECT) .or.  &
+       (flow % p % bnd_cond_type(c2) .eq. SYMMETRY) ) then
       pp % n(c2) = 0.0
     end if  ! .not. PRESSURE
   end do  ! 1, grid % n_faces
