@@ -28,7 +28,7 @@
 !-----------------------------------[Locals]-----------------------------------!
   type(Grid_Type), pointer :: grid
   type(Bulk_Type), pointer :: bulk
-  type(Var_Type),  pointer :: u, v, w, t, phi
+  type(Var_Type),  pointer :: u, v, w, p, t, phi
   type(Var_Type),  pointer :: kin, eps, f22, zeta, vis, t2
   type(Var_Type),  pointer :: uu, vv, ww, uv, uw, vw
   type(Face_Type), pointer :: m_flux
@@ -63,6 +63,7 @@
   v_mean   => turb % v_mean
   w_mean   => turb % w_mean
   call Field_Mod_Alias_Momentum   (flow, u, v, w)
+  p => flow % p
   call Field_Mod_Alias_Energy     (flow, t)
   call Turb_Mod_Alias_K_Eps_Zeta_F(turb, kin, eps, zeta, f22)
   call Turb_Mod_Alias_Stresses    (turb, uu, vv, ww, uv, uw, vw)
@@ -355,6 +356,117 @@
   end if
 
   call User_Mod_Initialize_Variables(flow, turb, mult, swarm)
+
+  !-----------------------------------!
+  !   Define bnd_cond_type            !
+  !   to provide a shortcut for bc    !
+  !-----------------------------------!
+  !  For u_i, p, t, phi(scalars):     !
+  !    var % bnd_cond_type            !
+  !  For other vars (usually turb):   !
+  !    turb % bnd_cond_type           !
+  !-----------------------------------!
+
+  do s = 1, grid % n_faces
+    c1 = grid % faces_c(1,s)
+    c2 = grid % faces_c(2,s)
+    if(c2 < 0) then
+
+      if(Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. WALL) then
+        u % bnd_cond_type(c2) = WALL
+        v % bnd_cond_type(c2) = WALL
+        w % bnd_cond_type(c2) = WALL
+        p % bnd_cond_type(c2) = WALL
+      elseif(Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. WALLFL) then
+        u % bnd_cond_type(c2) = WALLFL
+        v % bnd_cond_type(c2) = WALLFL
+        w % bnd_cond_type(c2) = WALLFL
+        p % bnd_cond_type(c2) = WALLFL
+      elseif(Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. INFLOW) then
+        u % bnd_cond_type(c2) = INFLOW
+        v % bnd_cond_type(c2) = INFLOW
+        w % bnd_cond_type(c2) = INFLOW
+        p % bnd_cond_type(c2) = INFLOW
+      elseif(Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. OUTFLOW) then
+        u % bnd_cond_type(c2) = OUTFLOW
+        v % bnd_cond_type(c2) = OUTFLOW
+        w % bnd_cond_type(c2) = OUTFLOW
+        p % bnd_cond_type(c2) = OUTFLOW
+      elseif(Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. PRESSURE) then
+        u % bnd_cond_type(c2) = PRESSURE
+        v % bnd_cond_type(c2) = PRESSURE
+        w % bnd_cond_type(c2) = PRESSURE
+        p % bnd_cond_type(c2) = PRESSURE
+      elseif(Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. CONVECT) then
+        u % bnd_cond_type(c2) = CONVECT
+        v % bnd_cond_type(c2) = CONVECT
+        w % bnd_cond_type(c2) = CONVECT
+        p % bnd_cond_type(c2) = CONVECT
+      elseif(Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. SYMMETRY) then
+        u % bnd_cond_type(c2) = SYMMETRY
+        v % bnd_cond_type(c2) = SYMMETRY
+        w % bnd_cond_type(c2) = SYMMETRY
+        p % bnd_cond_type(c2) = SYMMETRY
+      end if  ! b.c. type
+
+      ! Etnhalpy / temperature
+      if(heat_transfer) then
+        if(Var_Mod_Bnd_Cond_Type(t,c2) .eq. WALL) then
+          t % bnd_cond_type(c2) = WALL
+        elseif(Var_Mod_Bnd_Cond_Type(t,c2) .eq. WALLFL) then
+          t % bnd_cond_type(c2) = WALLFL
+        elseif(Var_Mod_Bnd_Cond_Type(t,c2) .eq. INFLOW) then
+          t % bnd_cond_type(c2) = INFLOW
+        elseif(Var_Mod_Bnd_Cond_Type(t,c2) .eq. OUTFLOW) then
+          t % bnd_cond_type(c2) = OUTFLOW
+        elseif(Var_Mod_Bnd_Cond_Type(t,c2) .eq. PRESSURE) then
+          t % bnd_cond_type(c2) = PRESSURE
+        elseif(Var_Mod_Bnd_Cond_Type(t,c2) .eq. CONVECT) then
+          t % bnd_cond_type(c2) = CONVECT
+        elseif(Var_Mod_Bnd_Cond_Type(t,c2) .eq. SYMMETRY) then
+          t % bnd_cond_type(c2) = SYMMETRY
+        end if  ! b.c. type
+
+      end if  ! heat_transfer
+
+      ! Scalars
+      do sc = 1, flow % n_scalars
+        phi => flow % scalar(sc)
+        if(Var_Mod_Bnd_Cond_Type(t,c2) .eq. WALL) then
+          phi % bnd_cond_type(c2) = WALL
+        elseif(Var_Mod_Bnd_Cond_Type(t,c2) .eq. WALLFL) then
+          phi % bnd_cond_type(c2) = WALLFL
+        elseif(Var_Mod_Bnd_Cond_Type(t,c2) .eq. INFLOW) then
+          phi % bnd_cond_type(c2) = INFLOW
+        elseif(Var_Mod_Bnd_Cond_Type(t,c2) .eq. OUTFLOW) then
+          phi % bnd_cond_type(c2) = OUTFLOW
+        elseif(Var_Mod_Bnd_Cond_Type(t,c2) .eq. PRESSURE) then
+          phi % bnd_cond_type(c2) = PRESSURE
+        elseif(Var_Mod_Bnd_Cond_Type(t,c2) .eq. CONVECT) then
+          phi % bnd_cond_type(c2) = CONVECT
+        elseif(Var_Mod_Bnd_Cond_Type(t,c2) .eq. SYMMETRY) then
+          phi % bnd_cond_type(c2) = SYMMETRY
+        end if  ! b.c. type
+      end do  ! 1, flow % n_scalars
+
+      ! Turbulence b.c.
+      if(Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. WALL) then
+        turb % bnd_cond_type(c2) = WALL
+      elseif(Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. WALLFL) then
+        turb % bnd_cond_type(c2) = WALLFL
+      elseif(Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. INFLOW) then
+        turb % bnd_cond_type(c2) = INFLOW
+      elseif(Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. OUTFLOW) then
+        turb % bnd_cond_type(c2) = OUTFLOW
+      elseif(Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. PRESSURE) then
+        turb % bnd_cond_type(c2) = PRESSURE
+      elseif(Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. CONVECT) then
+        turb % bnd_cond_type(c2) = CONVECT
+      elseif(Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. SYMMETRY) then
+        turb % bnd_cond_type(c2) = SYMMETRY
+      end if  ! b.c. type
+    end if  ! c2 < 0
+  end do  ! 1, grid % n_faces
 
   !--------------------------------!
   !      Calculate the inflow      !

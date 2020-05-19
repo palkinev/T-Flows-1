@@ -94,7 +94,7 @@
   call Comm_Mod_Global_Max_Real(p_max)
   call Comm_Mod_Global_Min_Real(p_min)
 
-  ! Normalize pressure with the maximum of pressure difference, 
+  ! Normalize pressure with the maximum of pressure difference,
   ! value defined in control file and pressure drops.
   p_nor = max( (p_max-p_min), p_nor_c, abs(bulk % p_drop_x),  &
                                        abs(bulk % p_drop_y),  &
@@ -107,7 +107,7 @@
   !-----------------------------------------!
   !   Initialize the pressure corrections   !
   !-----------------------------------------!
-  pp % n = 0.0 
+  pp % n = 0.0
 
   !----------------------------!
   !   Initialize dens_factor   !
@@ -132,7 +132,7 @@
     ! Face is inside the domain
     if(c2 > 0) then
 
-      ! Interpolate velocity 
+      ! Interpolate velocity
       u_f = fs * u % n(c1) + (1.0 - fs) * u % n(c2)
       v_f = fs * v % n(c1) + (1.0 - fs) * v % n(c2)
       w_f = fs * w % n(c1) + (1.0 - fs) * w % n(c2)
@@ -203,7 +203,7 @@
       flux % n(s) = 0.0
     end if
 
-  end do
+  end do  ! 1, grid % n_faces
 
   !-------------------------------------------------------------!
   !   In case of VOF, surface tension and  gravity correction   !
@@ -223,26 +223,26 @@
 
   call Cpu_Timer_Mod_Start('Linear_Solver_For_Pressure')
   if(solver .eq. 'ACM') then
-    pp % tol   = PICO
+    pp % tol = PICO
     call Acm(sol,           &
              pp % n,        &
              b,             &
              pp % precond,  &
-             pp % niter,    &     ! number of V cycles
+             pp % niter,    &  ! number of V cycles
              pp % tol,      &
              pp % res,      &
-             norm = p_nor)        ! last argument: number for normalisation
+             norm = p_nor)     ! last argument: number for normalisation
     stop
   else
     call Cg(sol,           &
             pp % n,        &
             b,             &
             pp % precond,  &
-            pp % niter,    &      ! max number of iterations
-            exec_iter,     &      ! executed number of iterations
+            pp % niter,    &  ! max number of iterations
+            exec_iter,     &  ! executed number of iterations
             pp % tol,      &
             pp % res,      &
-            norm = p_nor)         ! last argument: number for normalisation
+            norm = p_nor)     ! last argument: number for normalisation
   end if
   call Cpu_Timer_Mod_Stop('Linear_Solver_For_Pressure')
 
@@ -258,8 +258,8 @@
   !------------------------------------!
   !   Normalize the pressure field     !
   !------------------------------------!
-  p_max  = maxval(p % n(1:grid % n_cells))
-  p_min  = minval(p % n(1:grid % n_cells))
+  p_max = maxval(p % n(1:grid % n_cells))
+  p_min = minval(p % n(1:grid % n_cells))
 
   call Comm_Mod_Global_Max_Real(p_max)
   call Comm_Mod_Global_Min_Real(p_min)
