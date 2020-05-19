@@ -50,7 +50,7 @@
                    / (grid % wall_dist(turb % nearest_wall_cell(c))+TINY) )
         turb % y_plus(c) = grid % wall_dist(c) * u_f / flow % viscosity(c)
         cs = c_smag * (1.0 - exp(-turb % y_plus(c) / 25.0))
-      else  
+      else
         cs = c_smag
       end if
       turb % vis_t(c) = flow % density(c)  &
@@ -85,7 +85,8 @@
           / max(t_ref, TINY)
       nc2 = max(0.0, nc2)
       turb % vis_t(c) = turb % vis_t(c)  &
-                      * sqrt(1.0 - min(2.5*nc2/(flow % shear(c)**2), 1.0))
+                      * sqrt(1.0 -  &
+                        min(2.5 * nc2/(max(flow % shear(c), TINY)**2), 1.0))
     end do
   end if
 
@@ -110,41 +111,38 @@
     c1 = grid % faces_c(1,s)
     c2 = grid % faces_c(2,s)
 
-    if(c2  < 0) then
+    nx = grid % sx(s) / grid % s(s)
+    ny = grid % sy(s) / grid % s(s)
+    nz = grid % sz(s) / grid % s(s)
 
-      nx = grid % sx(s) / grid % s(s)
-      ny = grid % sy(s) / grid % s(s)
-      nz = grid % sz(s) / grid % s(s)
+    if(turb % bnd_cond_type(c2) .eq. WALL .or.  &
+       turb % bnd_cond_type(c2) .eq. WALLFL) then
 
-      if(Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. WALL .or.  &
-         Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. WALLFL) then
+      u_tan = Field_Mod_U_Tan(flow, s)
 
-        u_tan = Field_Mod_U_Tan(flow, s)
+      a_pow = 8.3
+      b_pow = 1.0/7.0
+      nu = flow % viscosity(c1) / flow % density(c1)
+      dely = grid % wall_dist(c1)
 
-        a_pow = 8.3
-        b_pow = 1.0/7.0
-        nu = flow % viscosity(c1) / flow % density(c1)
-        dely = grid % wall_dist(c1)
+      ! Calculate u_tau_l
+      u_tau_l = ( u_tan/a_pow * (nu/dely)**b_pow ) ** (1.0/(1.0+b_pow))
 
-        ! Calculate u_tau_l
-        u_tau_l = ( u_tan/a_pow * (nu/dely)**b_pow ) ** (1.0/(1.0+b_pow))
+      ! Calculate tau_wall (but it is never used)
+      turb % tau_wall(c1) = flow % viscosity(c1) * u_tan / dely
 
-        ! Calculate tau_wall (but it is never used)
-        turb % tau_wall(c1) = flow % viscosity(c1) * u_tan / dely
-
-        ! Calculate y+
-        turb % y_plus(c1)  = dely * u_tau_l / nu
-        if(turb % y_plus(c1)  >=  11.81) then
-          ! This one is effective viscosity
-          turb % vis_w(c1) = flow % density(c1) * u_tau_l * u_tau_l * dely  &
-                           / abs(u_tan)
-        else
-          turb % vis_w(c1) = flow % viscosity(c1)                &
-                        +      grid % fw(s)  * turb % vis_t(c1)  &
-                        + (1.0-grid % fw(s)) * turb % vis_t(c2)
-        end if
-      end if  ! Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. WALL or WALLFL
-    end if    ! c2 < 0
+      ! Calculate y+
+      turb % y_plus(c1) = dely * u_tau_l / nu
+      if(turb % y_plus(c1) >= 11.81) then
+        ! This one is effective viscosity
+        turb % vis_w(c1) = flow % density(c1) * u_tau_l * u_tau_l * dely  &
+                         / abs(u_tan)
+      else
+        turb % vis_w(c1) = flow % viscosity(c1)                &
+                      +      grid % fw(s)  * turb % vis_t(c1)  &
+                      + (1.0-grid % fw(s)) * turb % vis_t(c2)
+      end if
+    end if  ! WALL or WALLFL
   end do
 
   call Grid_Mod_Exchange_Real(grid, turb % vis_t)
