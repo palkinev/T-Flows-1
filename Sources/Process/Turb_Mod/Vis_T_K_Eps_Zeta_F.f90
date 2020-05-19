@@ -70,81 +70,77 @@
     c1 = grid % faces_c(1,s)
     c2 = grid % faces_c(2,s)
 
-    if(c2 < 0) then
+    if(turb % bnd_cond_type(c2) .eq. WALL .or.  &
+       turb % bnd_cond_type(c2) .eq. WALLFL) then
 
       ! kinematic viscosities
       kin_vis = flow % viscosity(c1) / flow % density(c1)
+      u_tan = Field_Mod_U_Tan(flow, s)
 
-      if(Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. WALL .or.  &
-         Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. WALLFL) then
+      u_tau = c_mu25 * sqrt(kin % n(c1))
+      turb % y_plus(c1) = Y_Plus_Low_Re(turb,                  &
+                                        u_tau,                 &
+                                        grid % wall_dist(c1),  &
+                                        kin_vis)
 
-        u_tan = Field_Mod_U_Tan(flow, s)
+      turb % tau_wall(c1) = Tau_Wall_Low_Re(turb,                &
+                                            flow % density(c1),  &
+                                            u_tau,               &
+                                            u_tan,               &
+                                            turb % y_plus(c1))
 
-        u_tau = c_mu25 * sqrt(kin % n(c1))
-        turb % y_plus(c1) = Y_Plus_Low_Re(turb,                  &
-                                          u_tau,                 &
-                                          grid % wall_dist(c1),  &
-                                          kin_vis)
+      ebf = Turb_Mod_Ebf_Momentum(turb, c1)
 
-        turb % tau_wall(c1) = Tau_Wall_Low_Re(turb,                &
-                                              flow % density(c1),  &
-                                              u_tau,               &
-                                              u_tan,               &
-                                              turb % y_plus(c1))
+      u_plus = U_Plus_Log_Law(turb, turb % y_plus(c1))
 
-        ebf = Turb_Mod_Ebf_Momentum(turb, c1)
+      if(turb % y_plus(c1) < 3.0) then
+        turb % vis_w(c1) = turb % vis_t(c1) + flow % viscosity(c1)
+      else
 
-        u_plus = U_Plus_Log_Law(turb, turb % y_plus(c1))
-
-        if(turb % y_plus(c1) < 3.0) then
-          turb % vis_w(c1) = turb % vis_t(c1) + flow % viscosity(c1)
-        else
-
-          if(turb % rough_walls) then
-            z_o = Roughness_Coefficient(turb, turb % z_o_f(c1))
-            z_o = max(grid % wall_dist(c1)   &
-            /(e_log * max(turb % y_plus(c1),1.0)),z_o) 
-           
-            turb % y_plus(c1) = Y_Plus_Rough_Walls(turb,                  &
-                                                   u_tau,                 &
-                                                   grid % wall_dist(c1),  &
-                                                   kin_vis)
-            u_plus     = U_Plus_Rough_Walls(turb, grid % wall_dist(c1))
-          end if
-
-          turb % vis_w(c1) =    turb % y_plus(c1) * flow % viscosity(c1)  &
-                           / (  turb % y_plus(c1) * exp(-1.0 * ebf)       &
-                              + u_plus * exp(-1.0/ebf) + TINY)
-
+        if(turb % rough_walls) then
+          z_o = Roughness_Coefficient(turb, turb % z_o_f(c1))
+          z_o = max(grid % wall_dist(c1)   &
+          /(e_log * max(turb % y_plus(c1),1.0)),z_o) 
+         
+          turb % y_plus(c1) = Y_Plus_Rough_Walls(turb,                  &
+                                                 u_tau,                 &
+                                                 grid % wall_dist(c1),  &
+                                                 kin_vis)
+          u_plus     = U_Plus_Rough_Walls(turb, grid % wall_dist(c1))
         end if
 
-        if(heat_transfer) then
-          pr_t = Turb_Mod_Prandtl_Number(turb, c1)
-          pr   = Field_Mod_Prandtl_Number(flow, c1)  ! laminar Prandtl number
-          beta = 9.24 * ((pr/pr_t)**0.75 - 1.0)     &
-               * (1.0 + 0.28 * exp(-0.007*pr/pr_t))
-          ebf = Turb_Mod_Ebf_Scalar(turb, c1, pr)
-          turb % con_w(c1) =    turb % y_plus(c1)                         &
-                              * flow % viscosity(c1)                      &
-                              * flow % capacity(c1)                       &
-                      / (  turb % y_plus(c1) * pr * exp(-1.0 * ebf)       &
-                         + (u_plus + beta) * pr_t * exp(-1.0 / ebf) + TINY)
-        end if
+        turb % vis_w(c1) =    turb % y_plus(c1) * flow % viscosity(c1)  &
+                         / (  turb % y_plus(c1) * exp(-1.0 * ebf)       &
+                            + u_plus * exp(-1.0/ebf) + TINY)
 
-        if(flow % n_scalars > 0) then
-          sc   = Field_Mod_Schmidt_Number(flow, c1)  ! laminar Schmidt number
-          beta = 9.24 * ((sc/sc_t)**0.75 - 1.0)                 &
-           * (1.0 + 0.28 * exp(-0.007*sc/sc_t))
-          ebf = 0.01 * (sc * turb % y_plus(c1)**4               &
-          / ((1.0 + 5.0 * sc**3 * turb % y_plus(c1)) + TINY))
-          turb % diff_w(c1) =  turb % y_plus(c1)                &
-              * (flow % viscosity(c1)/flow % density(c1)) &
-              / (  turb % y_plus(c1) * sc * exp(-1.0 * ebf)     &   
-              + (u_plus + beta) * sc_t * exp(-1.0 / ebf) + TINY)
-        end if
+      end if
 
-      end if  ! Grid_Mod_Bnd_Cond_Type(grid,c2).eq.WALL or WALLFL
-    end if    ! c2 < 0
+      if(heat_transfer) then
+        pr_t = Turb_Mod_Prandtl_Number(turb, c1)
+        pr   = Field_Mod_Prandtl_Number(flow, c1)  ! laminar Prandtl number
+        beta = 9.24 * ((pr/pr_t)**0.75 - 1.0)     &
+             * (1.0 + 0.28 * exp(-0.007*pr/pr_t))
+        ebf = Turb_Mod_Ebf_Scalar(turb, c1, pr)
+        turb % con_w(c1) =    turb % y_plus(c1)                         &
+                            * flow % viscosity(c1)                      &
+                            * flow % capacity(c1)                       &
+                    / (  turb % y_plus(c1) * pr * exp(-1.0 * ebf)       &
+                       + (u_plus + beta) * pr_t * exp(-1.0 / ebf) + TINY)
+      end if
+
+      if(flow % n_scalars > 0) then
+        sc   = Field_Mod_Schmidt_Number(flow, c1)  ! laminar Schmidt number
+        beta = 9.24 * ((sc/sc_t)**0.75 - 1.0)                 &
+         * (1.0 + 0.28 * exp(-0.007*sc/sc_t))
+        ebf = 0.01 * (sc * turb % y_plus(c1)**4               &
+        / ((1.0 + 5.0 * sc**3 * turb % y_plus(c1)) + TINY))
+        turb % diff_w(c1) =  turb % y_plus(c1)                &
+            * (flow % viscosity(c1)/flow % density(c1)) &
+            / (  turb % y_plus(c1) * sc * exp(-1.0 * ebf)     &   
+            + (u_plus + beta) * sc_t * exp(-1.0 / ebf) + TINY)
+      end if
+
+    end if  ! WALL or WALLFL
   end do
 
   call Grid_Mod_Exchange_Real(grid, turb % vis_t)
