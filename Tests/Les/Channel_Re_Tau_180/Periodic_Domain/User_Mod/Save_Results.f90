@@ -114,7 +114,7 @@
   !   Average the results   !
   !-------------------------!
   do i = 1, n_prob-1
-    do c = 1, grid % n_cells - grid % comm % n_buff_cells 
+    do c = 1, grid % n_cells - grid % comm % n_buff_cells
       if(grid % zc(c) > (z_p(i)) .and.  &
          grid % zc(c) < (z_p(i+1))) then
 
@@ -210,8 +210,8 @@
     return
   end if
 
-  if(heat_transfer) then 
-    d_wall = 0.0 
+  if(heat_transfer) then
+    d_wall = 0.0
     do c = 1, grid % n_cells
       if(grid % wall_dist(c) > d_wall) then
         d_wall = grid % wall_dist(c)
@@ -230,17 +230,15 @@
     do s = 1, grid % n_faces
       c1 = grid % faces_c(1,s)
       c2 = grid % faces_c(2,s)
-      if(c2  < 0) then
-        if( Grid_Mod_Bnd_Cond_Type(grid, c2) .eq. WALL .or.  &
-            Grid_Mod_Bnd_Cond_Type(grid, c2) .eq. WALLFL) then
+      if( t % bnd_cond_type(c2) .eq. WALL .or.  &
+          t % bnd_cond_type(c2) .eq. WALLFL) then
 
-          t_wall  = t_wall + turb % t_mean(c2)
-          nu_mean = nu_mean + t % q(c2)  &
-                  / (cond_const*(turb % t_mean(c2) - t_inf))
-          n_points = n_points + 1
-        end if
+        t_wall  = t_wall + turb % t_mean(c2)
+        nu_mean = nu_mean + t % q(c2)  &
+                / (cond_const*(turb % t_mean(c2) - t_inf))
+        n_points = n_points + 1
       end if
-    end do
+    end do  ! 1, grid % n_faces
 
     call Comm_Mod_Global_Sum_Real(t_wall)
     call Comm_Mod_Global_Sum_Real(nu_mean)
@@ -263,7 +261,7 @@
     cf      = u_tau_p**2/(0.5*ubulk**2)
     error   = abs(cf_dean - cf)/cf_dean * 100.0
     write(i,'(a1,(a12,e12.6))')  &
-    '#', 'ubulk    = ', ubulk 
+    '#', 'ubulk    = ', ubulk
     write(i,'(a1,(a12,e12.6))')  &
     '#', 're       = ', dens_const * ubulk * 2.0 / visc_const
     write(i,'(a1,(a12,e12.6))')  &
@@ -271,15 +269,15 @@
     write(i,'(a1,(a12,e12.6))')  &
     '#', 'cf       = ', 2.0*(u_tau_p/ubulk)**2
     write(i,'(a1,(a12,f12.6))')  &
-    '#', 'Utau     = ', u_tau_p 
-    write(i,'(a1,(a12,f12.6,a2,a22))') & 
+    '#', 'Utau     = ', u_tau_p
+    write(i,'(a1,(a12,f12.6,a2,a22))') &
     '#', 'Cf_error = ', error, ' %', 'Dean formula is used.'
     if(heat_transfer) then
-      write(i,'(a1,(a12, f12.6))')'#', 'Nu number =', nu_mean 
+      write(i,'(a1,(a12, f12.6))')'#', 'Nu number =', nu_mean
       write(i,'(a1,(a12, f12.6,a2,a39))')'#', 'Nu error  =',  &
             abs(0.023*0.5*re**0.8*pr**0.4 - nu_mean)          &
             / (0.023*0.5*re**0.8*pr**0.4) * 100.0, ' %',      &
-            'correlation of Dittus-Boelter is used.' 
+            'correlation of Dittus-Boelter is used.'
     end if
 
     if(heat_transfer) then
@@ -301,7 +299,7 @@
       if(n_count(i) .ne. 0) then
         write(3,'(12es15.5e3)') wall_p(i),                       & !  1
                                 u_p(i),                          & !  2
-                                uu_p(i),                         & !  3 
+                                uu_p(i),                         & !  3
                                 vv_p(i),                         & !  4
                                 ww_p(i),                         & !  5
                                 uw_p(i),                         & !  6

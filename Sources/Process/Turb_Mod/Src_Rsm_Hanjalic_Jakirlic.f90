@@ -1,6 +1,5 @@
 !==============================================================================!
-  subroutine Turb_Mod_Src_Rsm_Hanjalic_Jakirlic(turb, sol,  &
-                                                name_phi, n_time_step)
+  subroutine Turb_Mod_Src_Rsm_Hanjalic_Jakirlic(turb, sol, name_phi)
 !------------------------------------------------------------------------------!
 !   Calculate source terms for transport equations for Re stresses and         !
 !   dissipation for Hanjalic-Jakirlic model.                                   !
@@ -26,7 +25,6 @@
   type(Turb_Type),   target :: turb
   type(Solver_Type), target :: sol
   character(len=*)          :: name_phi
-  integer                   :: n_time_step
 !-----------------------------------[Locals]-----------------------------------!
   type(Field_Type),  pointer :: flow
   type(Grid_Type),   pointer :: grid

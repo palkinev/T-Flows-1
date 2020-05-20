@@ -76,19 +76,19 @@
     call Field_Mod_Grad_Variable(flow, flow % v)
     call Field_Mod_Grad_Variable(flow, flow % w)
 
-    call Turb_Mod_Compute_Stress(turb, sol, ini, turb % uu, n)
-    call Turb_Mod_Compute_Stress(turb, sol, ini, turb % vv, n)
-    call Turb_Mod_Compute_Stress(turb, sol, ini, turb % ww, n)
+    call Turb_Mod_Compute_Stress(turb, sol, ini, turb % uu)
+    call Turb_Mod_Compute_Stress(turb, sol, ini, turb % vv)
+    call Turb_Mod_Compute_Stress(turb, sol, ini, turb % ww)
 
-    call Turb_Mod_Compute_Stress(turb, sol, ini, turb % uv, n)
-    call Turb_Mod_Compute_Stress(turb, sol, ini, turb % uw, n)
-    call Turb_Mod_Compute_Stress(turb, sol, ini, turb % vw, n)
+    call Turb_Mod_Compute_Stress(turb, sol, ini, turb % uv)
+    call Turb_Mod_Compute_Stress(turb, sol, ini, turb % uw)
+    call Turb_Mod_Compute_Stress(turb, sol, ini, turb % vw)
 
     if(turb % model .eq. RSM_MANCEAU_HANJALIC) then
       call Turb_Mod_Compute_F22(turb, sol, ini, turb % f22)
     end if
 
-    call Turb_Mod_Compute_Stress(turb, sol, ini, turb % eps, n)
+    call Turb_Mod_Compute_Stress(turb, sol, ini, turb % eps)
 
     call Turb_Mod_Vis_T_Rsm(turb)
 

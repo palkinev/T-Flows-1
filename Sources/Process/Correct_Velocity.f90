@@ -64,12 +64,10 @@
     c1 = grid % faces_c(1,s)
     c2 = grid % faces_c(2,s)
 
-    if(c2  < 0) then
-      if( (Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. PRESSURE) ) then
-        u % n(c2) = u % n(c1)
-        v % n(c2) = v % n(c1)
-        w % n(c2) = w % n(c1)
-      end if
+    if(u % bnd_cond_type(c2) .eq. PRESSURE) then
+      u % n(c2) = u % n(c1)
+      v % n(c2) = v % n(c1)
+      w % n(c2) = w % n(c1)
     end if
   end do
 
@@ -88,17 +86,17 @@
     if(c2 > 0) then
                                  !<--- this is correction --->!
       flux % n(s) = flux % n(s) + ( pp % n(c2) - pp % n(c1) )   &
-                                   * a % val(a % pos(1,s)) 
+                                   * a % val(a % pos(1,s))
 
     end if
-  end do
+  end do  ! 1, grid % n_faces
 
   !-------------------------------------!
   !    Calculate the max mass error     !
   !   with the new (corrected) fluxes   !
   !-------------------------------------!
   do c = 1, grid % n_cells
-    b(c) = 0.0 
+    b(c) = 0.0
   end do
 
   do s = 1, grid % n_faces
@@ -147,7 +145,7 @@
                    (  grid % dx(s)*grid % dx(s)  &
                     + grid % dy(s)*grid % dy(s)  &
                     + grid % dz(s)*grid % dz(s)) ) )
-      pe_t    = abs( flux % n(s) / a % fc(s) / (visc_f / dens_f + TINY) )
+      pe_t = abs( flux % n(s) / a % fc(s) / (visc_f / dens_f + TINY) )
       flow % cfl_max = max( flow % cfl_max, cfl_t )
       flow % pe_max  = max( flow % pe_max,  pe_t  )
     end if

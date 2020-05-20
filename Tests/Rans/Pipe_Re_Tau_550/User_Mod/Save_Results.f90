@@ -322,30 +322,30 @@
 
     if(turbulence_model .eq. K_EPS) then
       if(heat_transfer) then
-        write(i,'(a1,2X,A60)') '#',  ' r,'                    //  &  !  1
-                                     ' w,'                    //  &  !  2
-                                     ' kin, eps, uw,'         //  &  !  3, 4, 5
-                                     ' vis_t/visc_const,'   //  &  !  6
-                                     ' t, ut, vt, wt,'               !  7 - 10
+        write(i,'(a1,2X,A60)') '#',  ' r,'                 //  &  !  1
+                                     ' w,'                 //  &  !  2
+                                     ' kin, eps, uw,'      //  &  !  3, 4, 5
+                                     ' vis_t/visc_const,'  //  &  !  6
+                                     ' t, ut, vt, wt,'            !  7 - 10
       else
-        write(i,'(a1,2X,A60)') '#', ' r,'                    //  &       !  1
-                                    ' w,'                    //  &       !  2
+        write(i,'(a1,2X,A60)') '#', ' r,'                  //  &       !  1
+                                    ' w,'                  //  &       !  2
                                     ' kin, eps, uw, vis_t/visc_const'  !  3-6
       end if
     else if(turbulence_model .eq. K_EPS_ZETA_F) then
       if(heat_transfer) then
-        write(i,'(a1,2X,A60)') '#',  ' r,'                    //  &  !  1
-                                     ' w,'                    //  &  !  2
-                                     ' kin, eps, uw,'         //  &  !  3, 4, 5
-                                     ' f22, zeta,'            //  &  !  6, 7
-                                     ' vis_t/visc_const,'   //  &  !  8 - 11
+        write(i,'(a1,2X,A60)') '#',  ' r,'                 //  &  !  1
+                                     ' w,'                 //  &  !  2
+                                     ' kin, eps, uw,'      //  &  !  3, 4, 5
+                                     ' f22, zeta,'         //  &  !  6, 7
+                                     ' vis_t/visc_const,'  //  &  !  8 - 11
                                      ' t, ut, vt, wt'
       else
-        write(i,'(a1,2X,A50)') '#', ' r,'                     //  &  !  1
-                                    ' w,'                     //  &  !  2
-                                    ' kin, eps, uw,'          //  &  !  3, 4, 5
-                                    ' f22, zeta'              //  &  !  6, 7
-                                    ' vis_t/visc_const,'           !  8
+        write(i,'(a1,2X,A50)') '#', ' r,'                  //  &  !  1
+                                    ' w,'                  //  &  !  2
+                                    ' kin, eps, uw,'       //  &  !  3, 4, 5
+                                    ' f22, zeta'           //  &  !  6, 7
+                                    ' vis_t/visc_const,'          !  8
       end if
     end if
   end do
@@ -398,10 +398,10 @@
     end if
 
     if(heat_transfer) then
-      t_p (i) = (t_wall - t_p(i)) / t_tau   ! t % n(c)
-      ut_p(i) = ut_p(i) / (u_tau_p*t_tau)   ! ut % n(c)
-      vt_p(i) = vt_p(i) / (u_tau_p*t_tau)   ! vt % n(c)
-      wt_p(i) = wt_p(i) / (u_tau_p*t_tau)   ! wt % n(c)
+      t_p (i) = (t_wall - t_p(i)) / t_tau  ! t % n(c)
+      ut_p(i) = ut_p(i) / (u_tau_p*t_tau)  ! ut % n(c)
+      vt_p(i) = vt_p(i) / (u_tau_p*t_tau)  ! vt % n(c)
+      wt_p(i) = wt_p(i) / (u_tau_p*t_tau)  ! wt % n(c)
     end if
   end do
 

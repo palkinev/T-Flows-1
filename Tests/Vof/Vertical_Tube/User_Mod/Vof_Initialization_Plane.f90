@@ -41,12 +41,12 @@
     min_max_crit_1(:) =  HUGE
     min_max_crit_2(:) = -HUGE
 
-    read(fu,*) p_xyz(1,:) 
-    read(fu,*) p_xyz(2,:) 
-    read(fu,*) p_xyz(3,:) 
+    read(fu,*) p_xyz(1,:)
+    read(fu,*) p_xyz(2,:)
+    read(fu,*) p_xyz(3,:)
 
-    v1aux(:) = p_xyz(2,:) - p_xyz(1,:) 
-    v2aux(:) = p_xyz(3,:) - p_xyz(1,:) 
+    v1aux(:) = p_xyz(2,:) - p_xyz(1,:)
+    v2aux(:) = p_xyz(3,:) - p_xyz(1,:)
 
     n_xyz(1) = v1aux(2) * v2aux(3) - v1aux(3) * v2aux(2)
     n_xyz(2) = - (v1aux(1) * v2aux(3) - v1aux(3) * v2aux(1))

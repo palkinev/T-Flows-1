@@ -28,8 +28,8 @@
      turb % model .eq. RSM_HANJALIC_JAKIRLIC) then
     if(turb % model_variant .ne. STABILIZED) then
 
-      vis_tur =     (grid % fw(s)  * turb % vis_t(c1)  &
-              + (1.0-grid % fw(s)) * turb % vis_t(c2))
+      vis_tur =      ( grid % fw(s)  * turb % vis_t(c1)  &
+              + (1.0 - grid % fw(s)) * turb % vis_t(c2) )
 
       f_ex = vis_tur * ui_si
 
@@ -37,7 +37,7 @@
       f_im = a0 * ui_di
 
       b(c1) = b(c1) - a0 * (ui_c2 - ui_c1) - f_ex + f_im
-      if(c2  > 0) then
+      if(c2 > 0) then
         b(c2) = b(c2) + a0 * (ui_c2 - ui_c1) + f_ex - f_im
       end if
     end if

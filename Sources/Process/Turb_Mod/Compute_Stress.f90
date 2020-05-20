@@ -1,5 +1,5 @@
 !==============================================================================!
-  subroutine Turb_Mod_Compute_Stress(turb, sol, ini, phi, n_time_step)
+  subroutine Turb_Mod_Compute_Stress(turb, sol, ini, phi)
 !------------------------------------------------------------------------------!
 !   Discretizes and solves transport equation for Re stresses for RSM.         !
 !------------------------------------------------------------------------------!
@@ -21,7 +21,6 @@
   type(Solver_Type), target :: sol
   integer                   :: ini
   type(Var_Type)            :: phi
-  integer                   :: n_time_step
 !-----------------------------------[Locals]-----------------------------------!
   type(Field_Type),  pointer :: flow
   type(Grid_Type),   pointer :: grid
@@ -107,14 +106,13 @@
   !   Spatial discretization   !
   !----------------------------!
   do s = 1, grid % n_faces
-
     c1 = grid % faces_c(1,s)
     c2 = grid % faces_c(2,s)
 
     ! vis_tur is used to make diaginal element more dominant.
     ! This contribution is later substracted.
-    vis_t_f =      grid % fw(s)  * turb % vis_t(c1)  &
-            + (1.0-grid % fw(s)) * turb % vis_t(c2)
+    vis_t_f =        grid % fw(s)  * turb % vis_t(c1)  &
+            + (1.0 - grid % fw(s)) * turb % vis_t(c2)
 
     visc_f =        grid % fw(s)  * flow % viscosity(c1)  &
            + (1.0 - grid % fw(s)) * flow % viscosity(c2)
@@ -135,20 +133,20 @@
     ! Total (exact) diffusive flux plus turb. diffusion
     f_ex = vis_eff * (  phix_f * grid % sx(s)  &
                       + phiy_f * grid % sy(s)  &
-                      + phiz_f * grid % sz(s) ) 
+                      + phiz_f * grid % sz(s) )
 
     a0 = vis_eff * a % fc(s)
 
     ! Implicit diffusive flux
     ! (this is a very crude approximation: f_coef is
     !  not corrected at interface between materials)
-    f_im=( phix_f*grid % dx(s)                      &
-         +phiy_f*grid % dy(s)                      &
-         +phiz_f*grid % dz(s))*a0
+    f_im = ( phix_f*grid % dx(s)       &
+           + phiy_f*grid % dy(s)       &
+           + phiz_f*grid % dz(s) )*a0
 
     ! Cross diffusion part
     phi % c(c1) = phi % c(c1) + f_ex - f_im
-    if(c2  > 0) then
+    if(c2 > 0) then
       phi % c(c2) = phi % c(c2) - f_ex + f_im
     end if
 
@@ -160,26 +158,26 @@
     a21 = a21  + max(flux(s), 0.)
 
     ! Fill the system matrix
-    if(c2  > 0) then
+    if(c2 > 0) then
       a % val(a % pos(1,s)) = a % val(a % pos(1,s)) - a12
       a % val(a % dia(c1))  = a % val(a % dia(c1))  + a12
       a % val(a % pos(2,s)) = a % val(a % pos(2,s)) - a21
       a % val(a % dia(c2))  = a % val(a % dia(c2))  + a21
-    else if(c2  < 0) then
+    else if(c2 < 0) then
 
-      ! Outflow is not included because it was causing problems     
-      ! Convect is commented because for turbulent scalars convect 
+      ! Outflow is not included because it was causing problems
+      ! Convect is commented because for turbulent scalars convect
       ! outflow is treated as classic outflow.
-      if((Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. INFLOW).or.     &
-         (Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. WALL).or.       &
-!!!      (Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. CONVECT).or.    &
-         (Grid_Mod_Bnd_Cond_Type(grid,c2) .eq. WALLFL) ) then
+      if((turb % bnd_cond_type(c2) .eq. INFLOW).or.     &
+         (turb % bnd_cond_type(c2) .eq. WALL).or.       &
+!!!      (turb % bnd_cond_type(c2) .eq. CONVECT).or.    &
+         (turb % bnd_cond_type(c2) .eq. WALLFL) ) then
         a % val(a % dia(c1)) = a % val(a % dia(c1)) + a12
         b(c1) = b(c1) + a12 * phi % n(c2)
       end if
     end if
 
-  end do  ! through faces
+  end do  ! 1, grid % n_faces
 
   !------------------------------!
   !   Turbulent diffusion term   !
@@ -193,48 +191,48 @@
   if(turb % model_variant .ne. STABILIZED) then
     if(turb % model .eq. RSM_HANJALIC_JAKIRLIC) then
       do c = 1, grid % n_cells
-        u1uj_phij(c) = flow % density(c) * c_mu_d / phi % sigma        &
-                     * kin % n(c)                                      &
-                     / max(eps % n(c), TINY)                           &
-                     * (  uu % n(c) * phi_x(c)                         &
-                        + uv % n(c) * phi_y(c)                         &
-                        + uw % n(c) * phi_z(c))                        &
+        u1uj_phij(c) = flow % density(c) * c_mu_d / phi % sigma  &
+                     * kin % n(c)                                &
+                     / max(eps % n(c), TINY)                     &
+                     * (  uu % n(c) * phi_x(c)                   &
+                        + uv % n(c) * phi_y(c)                   &
+                        + uw % n(c) * phi_z(c))                  &
                      - flow % viscosity(c) * phi_x(c)
 
-        u2uj_phij(c) = flow % density(c) * c_mu_d / phi % sigma        &
-                     * kin % n(c)                                      &
-                     / max(eps % n(c), TINY)                           &
-                     * (  uv % n(c) * phi_x(c)                         &
-                        + vv % n(c) * phi_y(c)                         &
-                        + vw % n(c) * phi_z(c))                        &
+        u2uj_phij(c) = flow % density(c) * c_mu_d / phi % sigma  &
+                     * kin % n(c)                                &
+                     / max(eps % n(c), TINY)                     &
+                     * (  uv % n(c) * phi_x(c)                   &
+                        + vv % n(c) * phi_y(c)                   &
+                        + vw % n(c) * phi_z(c))                  &
                      - flow % viscosity(c) * phi_y(c)
 
-        u3uj_phij(c) = flow % density(c) * c_mu_d / phi % sigma        &
-                     * kin % n(c)                                      &
-                     / max(eps % n(c), TINY)                           &
-                     * (  uw % n(c) * phi_x(c)                         &
-                        + vw % n(c) * phi_y(c)                         &
-                        + ww % n(c) * phi_z(c))                        &
+        u3uj_phij(c) = flow % density(c) * c_mu_d / phi % sigma  &
+                     * kin % n(c)                                &
+                     / max(eps % n(c), TINY)                     &
+                     * (  uw % n(c) * phi_x(c)                   &
+                        + vw % n(c) * phi_y(c)                   &
+                        + ww % n(c) * phi_z(c))                  &
                      - flow % viscosity(c) * phi_z(c)
       end do
     else if(turb % model .eq. RSM_MANCEAU_HANJALIC) then
       do c = 1, grid % n_cells
-        u1uj_phij(c) = flow % density(c) * c_mu_d / phi % sigma            &
-                     * turb % t_scale(c)                                   &
-                     * (  uu % n(c) * phi_x(c)                             &
-                        + uv % n(c) * phi_y(c)                             &
+        u1uj_phij(c) = flow % density(c) * c_mu_d / phi % sigma  &
+                     * turb % t_scale(c)                         &
+                     * (  uu % n(c) * phi_x(c)                   &
+                        + uv % n(c) * phi_y(c)                   &
                         + uw % n(c) * phi_z(c))
 
-        u2uj_phij(c) = flow % density(c) * c_mu_d / phi % sigma            &
-                     * turb % t_scale(c)                                   &
-                     * (  uv % n(c) * phi_x(c)                             &
-                        + vv % n(c) * phi_y(c)                             &
+        u2uj_phij(c) = flow % density(c) * c_mu_d / phi % sigma  &
+                     * turb % t_scale(c)                         &
+                     * (  uv % n(c) * phi_x(c)                   &
+                        + vv % n(c) * phi_y(c)                   &
                         + vw % n(c) * phi_z(c))
 
-        u3uj_phij(c) = flow % density(c) * c_mu_d / phi % sigma            &
-                     * turb % t_scale(c)                                   &
-                     * (  uw % n(c) * phi_x(c)                             &
-                        + vw % n(c) * phi_y(c)                             &
+        u3uj_phij(c) = flow % density(c) * c_mu_d / phi % sigma  &
+                     * turb % t_scale(c)                         &
+                     * (  uw % n(c) * phi_x(c)                   &
+                        + vw % n(c) * phi_y(c)                   &
                         + ww % n(c) * phi_z(c))
       end do
     end if
@@ -265,9 +263,9 @@
       vis_eff = (grid % fw(s)      * turb % vis_t(c1)  &
               + (1.0-grid % fw(s)) * turb % vis_t(c2))
 
-      phix_f = grid % fw(s) * phi_x(c1) + (1.0-grid % fw(s)) * phi_x(c2)
-      phiy_f = grid % fw(s) * phi_y(c1) + (1.0-grid % fw(s)) * phi_y(c2)
-      phiz_f = grid % fw(s) * phi_z(c1) + (1.0-grid % fw(s)) * phi_z(c2)
+      phix_f = grid % fw(s) * phi_x(c1) + (1.0 - grid % fw(s)) * phi_x(c2)
+      phiy_f = grid % fw(s) * phi_y(c1) + (1.0 - grid % fw(s)) * phi_y(c2)
+      phiz_f = grid % fw(s) * phi_z(c1) + (1.0 - grid % fw(s)) * phi_z(c2)
       f_ex = vis_eff * (  phix_f * grid % sx(s)  &
                         + phiy_f * grid % sy(s)  &
                         + phiz_f * grid % sz(s))
@@ -279,7 +277,7 @@
       b(c1) = b(c1)                                             &
              - vis_eff * (phi % n(c2) - phi%n(c1)) * a % fc(s)  &
              - f_ex + f_im
-      if(c2  > 0) then
+      if(c2 > 0) then
         b(c2) = b(c2)                                            &
               + vis_eff * (phi % n(c2) - phi%n(c1)) * a % fc(s)  &
               + f_ex - f_im
@@ -312,7 +310,7 @@
 
     call Turb_Mod_Src_Rsm_Manceau_Hanjalic(turb, sol, phi % name)
   else if(turb % model .eq. RSM_HANJALIC_JAKIRLIC) then
-    call Turb_Mod_Src_Rsm_Hanjalic_Jakirlic(turb, sol, phi % name, n_time_step)
+    call Turb_Mod_Src_Rsm_Hanjalic_Jakirlic(turb, sol, phi % name)
   end if
 
   !---------------------------------!

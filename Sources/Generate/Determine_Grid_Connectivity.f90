@@ -65,7 +65,7 @@
           grid % faces_c(2, grid % n_faces) = c2 
 
           ! Which is c2 neighbour of c1 and vice versa
-          do c = 1,24
+          do c = 1, 24
             if(grid % cells_c(c,c1) .eq. c2) then 
               face_c_to_c(grid % n_faces,1) = c
             end if
@@ -78,7 +78,7 @@
           end do
 
           ! Nodes of a side grid % n_faces
-          if(c2  > 0) then
+          if(c2 > 0) then
             if(ref % cell_level(c2) > ref % cell_level(c1)) then
               grid % faces_n(1,grid % n_faces) =  &
                 grid % cells_n( lfn(face_c_to_c(grid % n_faces,2),4), c2 )
