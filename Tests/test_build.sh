@@ -15,7 +15,7 @@ FCOMP="gnu"
 # Conduct tests with DEBUG=yes
 DEBUG="no"
 # Conduct tests with CGNS or not
-CGNS="yes"
+CGNS="no"
 CGNS_MPI="openmpi"
 
 # A small reminder how to set up alternatives if you have mpich and openmpi:
@@ -884,9 +884,9 @@ function launch_matplotlib {
   # Launch script:
   $(sed -e '/#/d' ./tmp) >> $FULL_LOG 2>&1
   if [ "$4" == "" ]; then
-    echo "new figure was created:" "$1"/results.png
+    echo "new figure was created:" "$1"/results.png 2>&1 | tee -a $FULL_LOG
   else
-    echo "new figure was created:" "$1"/"$4".png
+    echo "new figure was created:" "$1"/"$4".png 2>&1 | tee -a $FULL_LOG
   fi
   time_in_seconds
 }
@@ -991,15 +991,16 @@ function process_full_length_test {
   # Restore control
   git checkout control
 
-  if ls "$name_in_div"-res-plus-ts??????.dat 1> /dev/null 2>&1; then # case-ts??????-res-plus.dat
+  if ls "$name_in_div"-res-plus-ts??????.dat 1> /dev/null 2>&1; then
+    # case-ts??????-res-plus.dat
 
     # extract essential data from produced .dat files
     last_results_plus_dat_file=$(realpath --relative-to="$3" \
       $(ls -tr1 "$name_in_div"-res-plus-ts??????.dat | tail -n1))
 
-    echo "results are:"
+    echo "results are:" 2>&1 | tee -a $FULL_LOG
     echo "$(head -n8 $(ls -tr1 "$name_in_div"-res-plus-ts??????.dat | \
-      tail -n1))"
+      tail -n1))" 2>&1 | tee -a $FULL_LOG
 
     launch_matplotlib \
       "$3" \
